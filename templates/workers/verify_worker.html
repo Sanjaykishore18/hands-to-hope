@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% block title %}Verify {{ new_worker.full_name }} - HandsToHope{% endblock %}
+{% block content %}
+<style>
+  .verify-card { border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+  .star-select { display:flex; gap:.4rem; flex-direction:row-reverse; justify-content:flex-end; }
+  .star-select input { display:none; }
+  .star-select label {
+    font-size: 2rem; cursor: pointer; color: #d1d5db;
+    transition: color .15s;
+  }
+  .star-select input:checked ~ label,
+  .star-select label:hover,
+  .star-select label:hover ~ label { color: #f59e0b; }
+  .decision-btn { transition: all .2s; }
+  .decision-btn.approve:hover  { background:#16a34a !important; color:white !important; }
+  .decision-btn.reject:hover   { background:#dc2626 !important; color:white !important; }
+  .info-row { display:flex; gap:.5rem; align-items:center; font-size:.9rem; color:#475569; margin-bottom:.4rem; }
+  .section-head { font-size:1rem; font-weight:700; color:#1e293b; border-bottom:2px solid #f1f5f9; padding-bottom:.4rem; margin-bottom:.8rem; }
+  .tip-box { background:#f0fdf4; border-left:4px solid #22c55e; border-radius:6px; padding:.7rem 1rem; font-size:.83rem; color:#166534; }
+  .warn-box { background:#fff7ed; border-left:4px solid #f97316; border-radius:6px; padding:.7rem 1rem; font-size:.83rem; color:#7c2d12; }
+</style>
+
+<div class="container py-4" style="max-width:960px;">
+
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <a href="{% url 'worker_dashboard' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i>Back
+    </a>
+    <h4 class="fw-bold mb-0">
+      <i class="fas fa-shield-alt me-2" style="color:var(--saffron)"></i>
+      Peer Verification Request
+    </h4>
+  </div>
+
+  <div class="tip-box mb-4">
+    <strong>📋 Your responsibility:</strong>
+    You have been selected to verify <strong>{{ new_worker.full_name }}</strong> from your area.
+    Please review their profile carefully and share your honest experience working with this person.
+    Genuine reviews earn you <strong>+0.25 rating points</strong>. Fake or fabricated reviews are
+    detected by our AI and result in a <strong>-0.5 penalty</strong>.
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── LEFT: New Worker Profile ─────────────────────────────────── -->
+    <div class="col-md-5">
+      <div class="card verify-card p-4 text-center mb-3">
+
+        {% if new_worker.photo %}
+          <img src="{{ new_worker.photo.url }}"
+               style="width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--saffron);margin:0 auto .8rem;"
+               alt="{{ new_worker.full_name }}">
+        {% else %}
+          <div style="width:110px;height:110px;border-radius:50%;background:#f0f0f0;margin:0 auto .8rem;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-user fa-3x text-muted"></i>
+          </div>
+        {% endif %}
+
+        <h5 class="fw-bold mb-0">{{ new_worker.full_name }}</h5>
+        <p class="text-muted small mb-2">{{ new_worker.get_primary_skill_display }}</p>
+        <span class="badge bg-warning text-dark mb-3">⏳ Awaiting Verification</span>
+
+        <div class="text-start">
+          <p class="section-head">Profile Details</p>
+          <div class="info-row">
+            <i class="fas fa-map-marker-alt" style="color:var(--saffron);width:18px;"></i>
+            {{ new_worker.village_town }}, {{ new_worker.district }}, {{ new_worker.state }}
+          </div>
+          <div class="info-row">
+            <i class="fas fa-briefcase" style="color:var(--blue);width:18px;"></i>
+            {{ new_worker.years_of_experience }} years experience
+          </div>
+          {% if new_worker.secondary_skills %}
+          <div class="info-row">
+            <i class="fas fa-tools" style="width:18px;color:#6366f1;"></i>
+            Also: {{ new_worker.secondary_skills }}
+          </div>
+          {% endif %}
+          <div class="info-row">
+            <i class="fas fa-id-card" style="width:18px;color:#10b981;"></i>
+            Aadhar registered ✓
+          </div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="card verify-card p-3 mb-3">
+        <p class="section-head"><i class="fas fa-user me-2"></i>About</p>
+        <p class="text-muted small mb-0">{{ new_worker.brief_intro }}</p>
+      </div>
+
+      <!-- References -->
+      {% if references %}
+      <div class="card verify-card p-3 mb-3">
+        <p class="section-head"><i class="fas fa-address-book me-2"></i>References</p>
+        {% for ref in references %}
+        <div class="mb-2 pb-2 border-bottom">
+          <div class="fw-semibold small">{{ ref.name }}</div>
+          <div class="text-muted" style="font-size:.78rem;">{{ ref.relation }} · {{ ref.village_town }}</div>
+          <div style="font-size:.78rem;"><i class="fas fa-phone me-1"></i>{{ ref.phone }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Portfolio -->
+      {% if portfolio %}
+      <div class="card verify-card p-3">
+        <p class="section-head"><i class="fas fa-images me-2"></i>Work Portfolio</p>
+        <div class="row g-1">
+          {% for item in portfolio %}
+          <div class="col-4">
+            <img src="{{ item.image.url }}" class="img-fluid rounded"
+                 style="height:80px;width:100%;object-fit:cover;" alt="{{ item.caption }}">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── RIGHT: Verification Form ──────────────────────────────────── -->
+    <div class="col-md-7">
+      <div class="card verify-card p-4">
+        <h5 class="fw-bold mb-4">
+          <i class="fas fa-pen me-2" style="color:var(--blue)"></i>
+          Your Verification
+        </h5>
+
+        <form method="post" id="verifyForm">
+          {% csrf_token %}
+
+          <!-- Rating -->
+          <div class="mb-4">
+            <label class="fw-semibold d-block mb-2">
+              Rate your experience working with this person
+              <span class="text-danger">*</span>
+            </label>
+            <div class="star-select" id="starSelect">
+              {% for i in "54321" %}
+              <input type="radio" id="star{{ i }}" name="verifier_rating" value="{{ i }}" required>
+              <label for="star{{ i }}" title="{{ i }} star{% if i != '1' %}s{% endif %}">
+                <i class="fas fa-star"></i>
+              </label>
+              {% endfor %}
+            </div>
+            <small class="text-muted">1 = Poor, 5 = Excellent</small>
+          </div>
+
+          <!-- Comment -->
+          <div class="mb-4">
+            <label class="fw-semibold mb-1" for="comments">
+              Describe your experience working with {{ new_worker.full_name }}
+              <span class="text-danger">*</span>
+            </label>
+            <textarea name="comments" id="comments" class="form-control" rows="5"
+              placeholder="e.g. I hired this person for construction work in 2024. They were punctual, hard-working and completed the task on time…"
+              minlength="30" required></textarea>
+            <div class="d-flex justify-content-between mt-1">
+              <small class="text-muted">Minimum 30 characters. Be honest and specific.</small>
+              <small class="text-muted" id="charCount">0 / 30 min</small>
+            </div>
+          </div>
+
+          <!-- Decision -->
+          <div class="mb-4">
+            <label class="fw-semibold d-block mb-2">
+              Your Verification Decision <span class="text-danger">*</span>
+            </label>
+            <div class="d-flex gap-3">
+              <label class="flex-grow-1">
+                <input type="radio" name="decision" value="approved" required class="d-none" id="decApprove">
+                <div class="decision-btn approve card p-3 text-center border-2 h-100"
+                     style="cursor:pointer;border-color:#22c55e !important;"
+                     onclick="document.getElementById('decApprove').checked=true;highlightDecision('approve')">
+                  <i class="fas fa-check-circle fa-2x mb-2" style="color:#22c55e"></i>
+                  <div class="fw-bold" style="color:#16a34a">Approve</div>
+                  <small class="text-muted">I can vouch for this worker</small>
+                </div>
+              </label>
+              <label class="flex-grow-1">
+                <input type="radio" name="decision" value="rejected" class="d-none" id="decReject">
+                <div class="decision-btn reject card p-3 text-center border-2 h-100"
+                     style="cursor:pointer;border-color:#ef4444 !important;"
+                     onclick="document.getElementById('decReject').checked=true;highlightDecision('reject')">
+                  <i class="fas fa-times-circle fa-2x mb-2" style="color:#ef4444"></i>
+                  <div class="fw-bold" style="color:#dc2626">Reject</div>
+                  <small class="text-muted">I have concerns about this worker</small>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="warn-box mb-4">
+            ⚠️ <strong>Important:</strong> Only submit a review based on real, personal experience.
+            Our AI will scan your submission for authenticity. Fake reviews result in an
+            immediate <strong>-0.5 rating score penalty</strong>.
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 fw-bold py-3" id="submitBtn" disabled>
+            <i class="fas fa-paper-plane me-2"></i>Submit Verification
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Enable submit only when all fields are filled
+  const form       = document.getElementById('verifyForm');
+  const submitBtn  = document.getElementById('submitBtn');
+  const commentBox = document.getElementById('comments');
+  const charCount  = document.getElementById('charCount');
+
+  function checkReady() {
+    const hasRating   = document.querySelector('input[name="verifier_rating"]:checked');
+    const hasDecision = document.querySelector('input[name="decision"]:checked');
+    const len         = commentBox.value.trim().length;
+    charCount.textContent = len + ' / 30 min';
+    charCount.style.color = len >= 30 ? '#16a34a' : '#ef4444';
+    submitBtn.disabled = !(hasRating && hasDecision && len >= 30);
+  }
+
+  form.addEventListener('change', checkReady);
+  commentBox.addEventListener('input', checkReady);
+
+  function highlightDecision(which) {
+    document.querySelector('.decision-btn.approve').style.background =
+      which === 'approve' ? '#f0fdf4' : '';
+    document.querySelector('.decision-btn.reject').style.background =
+      which === 'reject'  ? '#fef2f2' : '';
+    checkReady();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 510" fill="none">
+  <!-- Tamil Nadu outer boundary -->
+  <path d="M42,186 L55,175 L75,165 L95,155 L120,143 L148,132 L165,125 L182,120 L198,108 L215,98 L235,85 L252,73 L268,60 L285,50 L305,40 L325,32 L345,20 L362,10 L372,2 L372,18 L370,38 L362,62 L355,85 L345,108 L332,130 L322,152 L318,175 L320,198 L325,220 L328,245 L326,268 L318,292 L305,318 L288,342 L272,360 L255,378 L238,392 L218,408 L195,420 L175,428 L155,432 L138,435 L124,445 L118,458 L112,472 L110,484 L118,490 L124,494 L112,490 L105,480 L98,466 L92,450 L87,432 L86,415 L90,398 L96,380 L96,360 L92,342 L86,325 L80,308 L74,290 L68,272 L64,252 L62,232 L64,215 L68,205 L58,198 L48,192 L42,186 Z"
+        stroke="#1a1a1a" stroke-width="1.8" fill="white" stroke-linejoin="round"/>
+
+  <!-- District boundary lines (all approximate) -->
+  <g stroke="#1a1a1a" stroke-width="0.7" stroke-linecap="round">
+    <!-- Nilgiris / Coimbatore boundary -->
+    <line x1="52" y1="190" x2="68" y2="205"/>
+    <!-- Coimbatore / Tiruppur -->
+    <line x1="68" y1="205" x2="102" y2="218"/>
+    <!-- Erode district outline -->
+    <polyline points="95,155 105,175 125,185 140,195 132,215 102,218"/>
+    <!-- Salem boundaries -->
+    <line x1="140" y1="195" x2="175" y2="195"/>
+    <polyline points="165,125 160,155 148,170 140,195"/>
+    <!-- Namakkal-Salem -->
+    <line x1="140" y1="195" x2="168" y2="205"/>
+    <!-- Namakkal-Karur -->
+    <line x1="168" y1="205" x2="170" y2="230"/>
+    <!-- Karur-Trichy -->
+    <polyline points="170,230 195,240 220,246"/>
+    <!-- Dharmapuri -->
+    <polyline points="120,143 135,155 148,170"/>
+    <!-- Krishnagiri-Dharmapuri -->
+    <polyline points="160,118 148,132 148,170"/>
+    <!-- Tirupattur -->
+    <line x1="215" y1="98" x2="212" y2="115"/>
+    <!-- Vellore-Ranipet area -->
+    <polyline points="268,60 252,73 245,90 235,105"/>
+    <polyline points="248,76 262,90 270,105"/>
+    <!-- Tiruvannamalai boundaries -->
+    <polyline points="235,85 232,110 238,132 255,130 260,155 250,168"/>
+    <polyline points="235,105 212,115 200,130 200,150"/>
+    <!-- Villupuram -->
+    <polyline points="250,168 255,188 265,205"/>
+    <polyline points="265,205 276,200 282,185"/>
+    <!-- Cuddalore -->
+    <polyline points="282,185 300,178 316,178 318,198"/>
+    <!-- Kallakurichi -->
+    <polyline points="250,168 245,188 248,205 265,205"/>
+    <!-- Ariyalur-Perambalur -->
+    <polyline points="248,205 250,222 262,230 275,225 282,212 282,198"/>
+    <line x1="250" y1="222" x2="235" y2="240"/>
+    <!-- Trichy -->
+    <polyline points="220,246 235,240 250,245 258,260"/>
+    <!-- Mayiladuthurai-Nagapattinam-Tiruvarur-Thanjavur -->
+    <polyline points="262,230 268,248 285,258 298,268 308,280"/>
+    <line x1="298" y1="268" x2="318" y2="260"/>
+    <line x1="308" y1="280" x2="320" y2="285"/>
+    <polyline points="275,225 280,240 285,258"/>
+    <!-- Pudukkottai -->
+    <polyline points="258,260 250,278 240,295 245,310 255,320"/>
+    <!-- Dindigul -->
+    <polyline points="168,205 165,225 162,248 162,268 168,285"/>
+    <!-- Madurai -->
+    <polyline points="168,285 175,305 178,325 195,328"/>
+    <!-- Theni-Madurai boundary -->
+    <polyline points="92,330 108,312 130,300 148,292 165,285 168,285"/>
+    <polyline points="92,330 108,330 128,325 148,320 165,315 178,325"/>
+    <!-- Sivaganga -->
+    <polyline points="195,328 210,335 225,340 238,348 248,360"/>
+    <!-- Ramanathapuram -->
+    <polyline points="248,360 255,375 260,390 258,405"/>
+    <!-- Virudhunagar -->
+    <polyline points="178,325 182,345 185,362 195,375 210,380 225,378 238,375"/>
+    <!-- Thoothukudi -->
+    <polyline points="195,375 200,395 205,415 208,430"/>
+    <!-- Tirunelveli-Thoothukudi -->
+    <polyline points="148,435 165,432 180,430 195,425"/>
+    <!-- Tenkasi -->
+    <polyline points="96,380 110,378 128,378 148,375 165,368 178,362"/>
+    <!-- Kanyakumari -->
+    <polyline points="120,490 112,478 110,465 112,450 120,442 128,438 138,435"/>
+    <!-- NE districts: Chennai / Tiruvallur / Kanchipuram / Chengalpattu -->
+    <polyline points="345,20 338,32 325,32 318,40 312,52"/>
+    <polyline points="362,10 360,30 358,50 350,60 345,75"/>
+    <line x1="312" y1="52" x2="320" y2="60"/>
+    <polyline points="320,60 330,68 338,78 342,92 340,108 335,122"/>
+    <line x1="345" y1="75" x2="338" y2="78"/>
+    <polyline points="335,122 332,140 328,158"/>
+    <polyline points="312,52 308,68 305,85 298,100 292,115 282,125 280,140"/>
+    <!-- Theni district west boundary -->
+    <polyline points="86,330 88,310 90,290 92,270 90,252 88,232"/>
+  </g>
+</svg>

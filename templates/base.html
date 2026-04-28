@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -191,10 +192,31 @@
             .hero-section { padding: 40px 0; }
             .stat-number { font-size: 2rem; }
         }
+
+        /* ── India parallax background map ── */
+        #india-map-bg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85vh;
+            height: 85vh;
+            opacity: 0.15;
+            z-index: 1;
+            pointer-events: none;
+            will-change: transform;
+            mix-blend-mode: multiply;
+        }
+        #india-map-bg img { width: 100%; height: 100%; object-fit: contain; display: block; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+<!-- India map — full-page parallax background -->
+<div id="india-map-bg" aria-hidden="true">
+  <img src="{% static 'images/map-of-india-outline-silhouette-of-india-map-illustration-RGHNKJ.jpg' %}"
+       alt="" style="width:100%;height:100%;object-fit:contain;">
+</div>
 
 <nav class="navbar navbar-expand-lg">
     <div class="container">
@@ -281,8 +303,32 @@
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.com/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}
+
+<script>
+/* India map — mouse parallax (map follows mouse gently like floating) */
+(function () {
+  const el = document.getElementById('india-map-bg');
+  if (!el) return;
+  let curX = 0, curY = 0, tgtX = 0, tgtY = 0;
+  const STRENGTH = 25; // max pixel shift
+
+  document.addEventListener('mousemove', e => {
+    const cx = window.innerWidth  / 2;
+    const cy = window.innerHeight / 2;
+    tgtX = ((e.clientX - cx) / cx) * STRENGTH;
+    tgtY = ((e.clientY - cy) / cy) * STRENGTH;
+  });
+
+  (function loop() {
+    curX += (tgtX - curX) * 0.06;   // smooth lag
+    curY += (tgtY - curY) * 0.06;
+    el.style.transform =
+      `translate(calc(-50% + ${curX.toFixed(2)}px), calc(-50% + ${curY.toFixed(2)}px))`;
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
 </body>
 </html>

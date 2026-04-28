@@ -1,105 +1,193 @@
 {% extends 'base.html' %}
 {% block title %}{{ profile.full_name }} - HandsToHope{% endblock %}
 {% block content %}
+<style>
+  .trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .35rem .85rem;
+    border-radius: 999px;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  .trust-badge.success { background: #dcfce7; color: #166534; }
+  .trust-badge.warning { background: #fef9c3; color: #854d0e; }
+  .trust-badge.danger  { background: #fee2e2; color: #991b1b; }
+  .trust-badge.secondary { background: #f1f5f9; color: #475569; }
+
+  .trust-ring {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto .5rem;
+  }
+  .trust-ring svg { transform: rotate(-90deg); }
+  .trust-ring .ring-val {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  .fake-notice {
+    background: #fff7ed;
+    border-left: 4px solid #f97316;
+    border-radius: 6px;
+    padding: .55rem .9rem;
+    font-size: .82rem;
+    color: #7c2d12;
+    margin-bottom: 1rem;
+  }
+</style>
+
 <div class="container py-4">
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card text-center p-4">
-                {% if profile.photo %}
-                    <img src="{{ profile.photo.url }}" class="profile-photo mb-3 mx-auto" style="width:120px;height:120px;" alt="">
-                {% else %}
-                    <div style="width:120px;height:120px;border-radius:50%;background:#f0f0f0;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;">
-                        <i class="fas fa-user fa-3x text-muted"></i>
-                    </div>
-                {% endif %}
-                <h4 class="fw-bold">{{ profile.full_name }}</h4>
-                <p class="text-muted">{{ profile.get_primary_skill_display }}</p>
-                <div class="rating-circle mx-auto mb-2">{{ profile.average_rating }}</div>
-                <div class="star-rating mb-2">
-                    {% for i in "12345" %}
-                        <i class="fa{% if forloop.counter <= profile.average_rating %}s{% else %}r{% endif %} fa-star"></i>
-                    {% endfor %}
-                </div>
-                <p class="text-muted small">{{ profile.total_ratings }} review(s)</p>
-                <span class="badge badge-verified">✓ Verified Worker</span>
-                <hr>
-                <div class="text-start small">
-                    <p><i class="fas fa-map-marker-alt me-2" style="color:var(--saffron)"></i>{{ profile.district }}, {{ profile.state }}</p>
-                    <p><i class="fas fa-briefcase me-2" style="color:var(--blue)"></i>{{ profile.years_of_experience }} years experience</p>
-                    <div class="{% if profile.is_available %}available{% else %}unavailable{% endif %} availability-badge text-center">
-                        {% if profile.is_available %}✓ Available for Work{% else %}✗ Currently Busy{% endif %}
-                    </div>
-                </div>
-            </div>
+  <div class="row g-4">
 
-            <!-- References -->
-            {% if profile.references.all %}
-            <div class="card p-3 mt-3">
-                <h6 class="fw-bold mb-3"><i class="fas fa-address-book me-2"></i>References</h6>
-                {% for ref in profile.references.all %}
-                <div class="mb-2 pb-2 border-bottom">
-                    <div class="fw-semibold">{{ ref.name }}</div>
-                    <div class="text-muted small">{{ ref.relation }} · {{ ref.village_town }}</div>
-                    <div class="small"><i class="fas fa-phone me-1"></i>{{ ref.phone }}</div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
+    <!-- ── LEFT COLUMN ─────────────────────────────────────────────────── -->
+    <div class="col-md-4">
+      <div class="card text-center p-4">
+
+        {% if profile.photo %}
+          <img src="{{ profile.photo.url }}" class="profile-photo mb-3 mx-auto"
+               style="width:120px;height:120px;" alt="">
+        {% else %}
+          <div style="width:120px;height:120px;border-radius:50%;background:#f0f0f0;
+                      margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-user fa-3x text-muted"></i>
+          </div>
+        {% endif %}
+
+        <h4 class="fw-bold">{{ profile.full_name }}</h4>
+        <p class="text-muted">{{ profile.get_primary_skill_display }}</p>
+
+        <!-- Star rating -->
+        <div class="rating-circle mx-auto mb-2">{{ profile.average_rating }}</div>
+        <div class="star-rating mb-2">
+          {% for i in "12345" %}
+            <i class="fa{% if forloop.counter <= profile.average_rating %}s{% else %}r{% endif %} fa-star"></i>
+          {% endfor %}
         </div>
+        <p class="text-muted small">{{ profile.total_ratings }} review(s)</p>
 
-        <div class="col-md-8">
-            <!-- About -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3" style="color:var(--blue)">About</h5>
-                    <p>{{ profile.brief_intro }}</p>
-                    {% if profile.secondary_skills %}
-                        <h6 class="fw-bold mt-3">Other Skills</h6>
-                        <p class="text-muted">{{ profile.secondary_skills }}</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Portfolio -->
-            {% if portfolio %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3" style="color:var(--blue)">Work Portfolio</h5>
-                    <div class="row g-2">
-                        {% for item in portfolio %}
-                        <div class="col-md-4 col-6">
-                            <img src="{{ item.image.url }}" class="img-fluid rounded" style="height:130px;width:100%;object-fit:cover;" alt="{{ item.caption }}">
-                            {% if item.caption %}<small class="text-muted">{{ item.caption }}</small>{% endif %}
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Reviews -->
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3" style="color:var(--blue)">Reviews from Hirers</h5>
-                    {% for review in reviews %}
-                    <div class="mb-3 pb-3 border-bottom">
-                        <div class="d-flex justify-content-between mb-1">
-                            <strong>{{ review.hirer.full_name }}</strong>
-                            <div class="star-rating">
-                                {% for i in "12345" %}
-                                    <i class="fa{% if forloop.counter <= review.rating %}s{% else %}r{% endif %} fa-star"></i>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        <p class="text-muted mb-0">{{ review.review_text }}</p>
-                        <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
-                    </div>
-                    {% empty %}
-                        <p class="text-muted">No reviews yet.</p>
-                    {% endfor %}
-                </div>
-            </div>
+        <!-- ML Trust Score ring -->
+        {% if trust_score is not None %}
+        <div class="trust-ring mb-1">
+          <svg width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="#e2e8f0" stroke-width="9"/>
+            <circle cx="45" cy="45" r="38" fill="none"
+              stroke="{% if trust_color == 'success' %}#22c55e{% elif trust_color == 'warning' %}#eab308{% elif trust_color == 'danger' %}#ef4444{% else %}#94a3b8{% endif %}"
+              stroke-width="9"
+              stroke-dasharray="{{ trust_score|floatformat:0 }} 100"
+              stroke-dasharray="{% widthratio trust_score 100 238 %} 238"
+              stroke-linecap="round"/>
+          </svg>
+          <div class="ring-val">{{ trust_score|floatformat:0 }}</div>
         </div>
+        <span class="trust-badge {{ trust_color }} mb-3">
+          {% if trust_color == 'success' %}🛡️{% elif trust_color == 'warning' %}⚠️{% else %}❗{% endif %}
+          {{ trust_label }}
+        </span>
+        {% endif %}
+
+        <span class="badge badge-verified">✓ Verified Worker</span>
+        <hr>
+
+        <div class="text-start small">
+          <p><i class="fas fa-map-marker-alt me-2" style="color:var(--saffron)"></i>{{ profile.district }}, {{ profile.state }}</p>
+          <p><i class="fas fa-briefcase me-2" style="color:var(--blue)"></i>{{ profile.years_of_experience }} years experience</p>
+          <div class="{% if profile.is_available %}available{% else %}unavailable{% endif %} availability-badge text-center">
+            {% if profile.is_available %}✓ Available for Work{% else %}✗ Currently Busy{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- References -->
+      {% if profile.references.all %}
+      <div class="card p-3 mt-3">
+        <h6 class="fw-bold mb-3"><i class="fas fa-address-book me-2"></i>References</h6>
+        {% for ref in profile.references.all %}
+        <div class="mb-2 pb-2 border-bottom">
+          <div class="fw-semibold">{{ ref.name }}</div>
+          <div class="text-muted small">{{ ref.relation }} · {{ ref.village_town }}</div>
+          <div class="small"><i class="fas fa-phone me-1"></i>{{ ref.phone }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
+
+    <!-- ── RIGHT COLUMN ────────────────────────────────────────────────── -->
+    <div class="col-md-8">
+
+      <!-- About -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3" style="color:var(--blue)">About</h5>
+          <p>{{ profile.brief_intro }}</p>
+          {% if profile.secondary_skills %}
+            <h6 class="fw-bold mt-3">Other Skills</h6>
+            <p class="text-muted">{{ profile.secondary_skills }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Portfolio -->
+      {% if portfolio %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3" style="color:var(--blue)">Work Portfolio</h5>
+          <div class="row g-2">
+            {% for item in portfolio %}
+            <div class="col-md-4 col-6">
+              <img src="{{ item.image.url }}" class="img-fluid rounded"
+                   style="height:130px;width:100%;object-fit:cover;" alt="{{ item.caption }}">
+              {% if item.caption %}<small class="text-muted">{{ item.caption }}</small>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="card">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3" style="color:var(--blue)">Reviews from Hirers</h5>
+
+          {% if fake_review_count %}
+          <div class="fake-notice">
+            🤖 <strong>{{ fake_review_count }} review{% if fake_review_count != 1 %}s{% endif %}</strong>
+            flagged as potentially fake by our AI and hidden from this profile.
+          </div>
+          {% endif %}
+
+          {% for review in reviews %}
+          <div class="mb-3 pb-3 border-bottom">
+            <div class="d-flex justify-content-between mb-1">
+              <strong>{{ review.hirer.full_name }}</strong>
+              <div class="star-rating">
+                {% for i in "12345" %}
+                  <i class="fa{% if forloop.counter <= review.rating %}s{% else %}r{% endif %} fa-star"></i>
+                {% endfor %}
+              </div>
+            </div>
+            <p class="text-muted mb-0">{{ review.review_text }}</p>
+            <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+          </div>
+          {% empty %}
+            <p class="text-muted">No verified reviews yet.</p>
+          {% endfor %}
+
+        </div>
+      </div>
+
+    </div><!-- /col-md-8 -->
+  </div>
 </div>
 {% endblock %}

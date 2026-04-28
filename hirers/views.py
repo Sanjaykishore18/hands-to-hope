@@ -93,6 +93,7 @@ def search_workers(request):
             workers = workers.filter(primary_skill=skill)
 
     wage_rates = {}
+    trust_scores = {}
     for worker in workers:
         try:
             rate = WageRate.objects.get(state=worker.state, district=worker.district, skill=worker.primary_skill)
@@ -104,10 +105,25 @@ def search_workers(request):
             except WageRate.DoesNotExist:
                 wage_rates[worker.id] = None
 
+        # ML: compute trust score per worker
+        try:
+            from ml_models.predictor import compute_trust_score, build_trust_features_from_worker
+            features = build_trust_features_from_worker(worker)
+            score = compute_trust_score(features)
+            if score >= 75:
+                trust_scores[worker.id] = {'score': score, 'label': 'High Trust', 'color': 'success'}
+            elif score >= 50:
+                trust_scores[worker.id] = {'score': score, 'label': 'Moderate', 'color': 'warning'}
+            else:
+                trust_scores[worker.id] = {'score': score, 'label': 'Low Trust', 'color': 'danger'}
+        except Exception:
+            trust_scores[worker.id] = None
+
     context = {
         'form': form,
         'workers': workers,
         'wage_rates': wage_rates,
+        'trust_scores': trust_scores,
         'search_date': request.GET.get('work_date'),
         'search_time': request.GET.get('work_time'),
         'duration': request.GET.get('duration_hours'),

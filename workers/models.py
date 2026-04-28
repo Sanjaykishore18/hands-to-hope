@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 VERIFICATION_STATUS = (
@@ -119,8 +120,12 @@ class WorkerPortfolio(models.Model):
 
 class WorkerVerification(models.Model):
     """
-    Blockchain-like verification: 3 existing verified workers verify a new worker.
-    If 2 agree and 1 disagrees → the disagreer's rating_score is penalized.
+    Peer verification: 2 already-verified workers from the same district
+    verify a newcomer and share their experience working with them.
+    - Both approve  → newcomer gets Verified; both verifiers earn +0.25 rating_score
+    - Both reject   → newcomer gets Rejected; both verifiers earn +0.25 rating_score
+    - 1-1 tie       → remains Pending; admin resolves manually
+    - ML flags a verifier's comment as fake → that verifier loses -0.5 immediately
     """
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -128,12 +133,18 @@ class WorkerVerification(models.Model):
         ('rejected', 'Rejected'),
     )
 
-    new_worker = models.ForeignKey(WorkerProfile, on_delete=models.CASCADE, related_name='verifications_received')
-    verifier = models.ForeignKey(WorkerProfile, on_delete=models.CASCADE, related_name='verifications_given')
-    decision = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
-    comments = models.TextField(blank=True)
-    submitted_at = models.DateTimeField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    new_worker      = models.ForeignKey(WorkerProfile, on_delete=models.CASCADE, related_name='verifications_received')
+    verifier        = models.ForeignKey(WorkerProfile, on_delete=models.CASCADE, related_name='verifications_given')
+    decision        = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    verifier_rating = models.PositiveIntegerField(
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text='Score (1-5) verifier gives the new worker based on past experience'
+    )
+    comments        = models.TextField(blank=True, help_text='Describe your experience working with this person')
+    is_fake_review  = models.BooleanField(default=False, help_text='ML flagged this verification comment as fake')
+    submitted_at    = models.DateTimeField(null=True, blank=True)
+    created_at      = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('new_worker', 'verifier')

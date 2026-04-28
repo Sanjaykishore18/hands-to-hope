@@ -106,6 +106,195 @@
                 <p class="mb-0 fw-bold text-muted">Portfolio Items</p>
             </div>
         </div>
+        {% if trust_score is not None %}
+        <div class="col-12 mt-1">
+            <div class="stat-card" style="border-top:3px solid {% if trust_color == 'success' %}#22c55e{% elif trust_color == 'warning' %}#eab308{% else %}#ef4444{% endif %};">
+                <div class="stat-number" style="color:{% if trust_color == 'success' %}#16a34a{% elif trust_color == 'warning' %}#b45309{% else %}#dc2626{% endif %};">
+                    {{ trust_score|floatformat:0 }}
+                </div>
+                <p class="mb-0 fw-bold text-muted">AI Trust Score</p>
+                <small class="text-muted">{{ trust_label }}</small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if trust_score is not None and trust_features %}
+    <!-- ML Trust Score Breakdown -->
+    <div class="card mb-4" style="border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.07);">
+        <div class="card-body p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-robot me-2" style="color:var(--saffron)"></i>
+                    AI Trust Score Breakdown
+                </h5>
+                <span class="badge px-3 py-2 fw-bold"
+                    style="background:{% if trust_color == 'success' %}#dcfce7;color:#166534{% elif trust_color == 'warning' %}#fef9c3;color:#854d0e{% else %}#fee2e2;color:#991b1b{% endif %};font-size:.9rem;border-radius:999px;">
+                    {% if trust_color == 'success' %}🛡️{% elif trust_color == 'warning' %}⚠️{% else %}❗{% endif %}
+                    {{ trust_score|floatformat:0 }} / 100 &nbsp;·&nbsp; {{ trust_label }}
+                </span>
+            </div>
+
+            <div class="row g-4">
+
+                <!-- Identity & Profile -->
+                <div class="col-md-4">
+                    <p class="fw-semibold text-muted small mb-2 text-uppercase" style="letter-spacing:.07em;">
+                        <i class="fas fa-id-badge me-1"></i> Identity & Profile
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">ID Verified</span>
+                            {% if trust_features.id_verified %}
+                                <span class="badge bg-success">✓ Yes</span>
+                            {% else %}
+                                <span class="badge bg-danger">✗ No</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Phone Verified</span>
+                            {% if trust_features.phone_verified %}
+                                <span class="badge bg-success">✓ Yes</span>
+                            {% else %}
+                                <span class="badge bg-danger">✗ No</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Profile Photo</span>
+                            {% if trust_features.profile_photo %}
+                                <span class="badge bg-success">✓ Yes</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">✗ Missing</span>
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Profile Completeness</span>
+                                <span class="fw-bold">{{ trust_features.profile_completeness|floatformat:0 }}%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar {% if trust_features.profile_completeness >= 0.75 %}bg-success{% elif trust_features.profile_completeness >= 0.4 %}bg-warning{% else %}bg-danger{% endif %}"
+                                     style="width:{% widthratio trust_features.profile_completeness 1 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="small">Experience (years)</span>
+                            <span class="badge bg-secondary">{{ trust_features.experience_years }} yrs</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Job Performance -->
+                <div class="col-md-4">
+                    <p class="fw-semibold text-muted small mb-2 text-uppercase" style="letter-spacing:.07em;">
+                        <i class="fas fa-briefcase me-1"></i> Job Performance
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Job Completion Rate</span>
+                                <span class="fw-bold">{% widthratio trust_features.job_completion_rate 1 100 %}%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar {% if trust_features.job_completion_rate >= 0.75 %}bg-success{% elif trust_features.job_completion_rate >= 0.4 %}bg-warning{% else %}bg-danger{% endif %}"
+                                     style="width:{% widthratio trust_features.job_completion_rate 1 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>On-time Rate</span>
+                                <span class="fw-bold">{% widthratio trust_features.on_time_rate 1 100 %}%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar bg-info"
+                                     style="width:{% widthratio trust_features.on_time_rate 1 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Repeat Hire Rate</span>
+                                <span class="fw-bold">{% widthratio trust_features.repeat_hire_rate 1 100 %}%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar bg-success"
+                                     style="width:{% widthratio trust_features.repeat_hire_rate 1 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Cancellation Rate</span>
+                                <span class="fw-bold">{% widthratio trust_features.cancellation_rate 1 100 %}%</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar bg-danger"
+                                     style="width:{% widthratio trust_features.cancellation_rate 1 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="small">Account Age</span>
+                            <span class="badge bg-secondary">{{ trust_features.account_age_days }} days</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Review Quality -->
+                <div class="col-md-4">
+                    <p class="fw-semibold text-muted small mb-2 text-uppercase" style="letter-spacing:.07em;">
+                        <i class="fas fa-star me-1"></i> Review Quality
+                    </p>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Clean Avg Rating</span>
+                                <span class="fw-bold">{{ trust_features.clean_avg_rating|floatformat:1 }} / 5</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar bg-warning"
+                                     style="width:{% widthratio trust_features.clean_avg_rating 5 100 %}%"></div>
+                            </div>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Total Reviews</span>
+                            <span class="badge bg-secondary">{{ trust_features.total_reviews }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">Fake Reviews Detected</span>
+                            {% if trust_features.fake_review_count == 0 %}
+                                <span class="badge bg-success">✓ None</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ trust_features.fake_review_count }} flagged</span>
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Expert Score</span>
+                                <span class="fw-bold">{{ trust_features.expert_score_weighted|floatformat:2 }}</span>
+                            </div>
+                            <div class="progress" style="height:6px;border-radius:999px;">
+                                <div class="progress-bar bg-primary"
+                                     style="width:{% if trust_features.expert_score_weighted > 0 %}min({% widthratio trust_features.expert_score_weighted 10 100 %}%, 100%){% else %}0%{% endif %}"></div>
+                            </div>
+                        </li>
+                        <li class="d-flex justify-content-between align-items-center">
+                            <span class="small">Photo Proof Rate</span>
+                            <span class="badge {% if trust_features.photo_proof_rate > 0 %}bg-success{% else %}bg-secondary{% endif %}">
+                                {% widthratio trust_features.photo_proof_rate 1 100 %}%
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div><!-- /row -->
+
+            <div class="mt-3 pt-3 border-top">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    This score is computed by our AI model using {{ trust_features|length }} factors.
+                    Improve your score by completing jobs, getting genuine reviews, and filling your profile.
+                </small>
+            </div>
+        </div>
     </div>
     {% endif %}
 
@@ -232,26 +421,27 @@
             {% for v in pending_to_verify %}
             <div class="card mb-2 border-warning">
                 <div class="card-body p-3">
-                    <h6 class="fw-bold">{{ v.new_worker.full_name }}</h6>
-                    <p class="text-muted small mb-2">
-                        {{ v.new_worker.primary_skill }} · {{ v.new_worker.district }}
-                    </p>
-                    <p class="small mb-2"><em>"{{ v.new_worker.brief_intro|truncatechars:80 }}"</em></p>
-
-                    <form method="post" action="{% url 'verify_worker' v.id %}">
-                        {% csrf_token %}
-                        <div class="mb-2">
-                            <textarea name="comments" class="form-control form-control-sm" rows="2" placeholder="Your assessment of this worker..."></textarea>
+                    <div class="d-flex align-items-center gap-3">
+                        {% if v.new_worker.photo %}
+                            <img src="{{ v.new_worker.photo.url }}"
+                                 style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--saffron);" alt="">
+                        {% else %}
+                            <div style="width:48px;height:48px;border-radius:50%;background:#f0f0f0;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-user text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-0">{{ v.new_worker.full_name }}</h6>
+                            <small class="text-muted">
+                                {{ v.new_worker.get_primary_skill_display }} ·
+                                {{ v.new_worker.district }}, {{ v.new_worker.state }}
+                            </small>
                         </div>
-                        <div class="d-flex gap-2">
-                            <button name="decision" value="approved" class="btn btn-success btn-sm flex-grow-1">
-                                <i class="fas fa-check me-1"></i>Approve
-                            </button>
-                            <button name="decision" value="rejected" class="btn btn-outline-danger btn-sm flex-grow-1">
-                                <i class="fas fa-times me-1"></i>Reject
-                            </button>
-                        </div>
-                    </form>
+                        <a href="{% url 'verify_worker' v.id %}"
+                           class="btn btn-warning btn-sm fw-bold">
+                            <i class="fas fa-shield-alt me-1"></i>Verify
+                        </a>
+                    </div>
                 </div>
             </div>
             {% endfor %}

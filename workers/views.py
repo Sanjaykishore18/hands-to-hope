@@ -58,21 +58,32 @@ def profile_setup(request):
 
 
 def _assign_verifiers(new_worker):
-    """Auto-assign 3 verified workers from same area with highest ratings"""
-    potential_verifiers = WorkerProfile.objects.filter(
-        verification_status='verified',
-        state=new_worker.state,
-        district=new_worker.district,
-    ).exclude(user=new_worker.user).order_by('-average_rating', '-rating_score')[:3]
+    """Randomly assign 2 verified workers from the same district to verify the newcomer.
+    Falls back to state level if fewer than 2 are available in the district.
+    """
+    import random
 
-    if potential_verifiers.count() < 3:
-        # Expand to state level if not enough in district
-        potential_verifiers = WorkerProfile.objects.filter(
+    # Try district first
+    candidates = list(
+        WorkerProfile.objects.filter(
             verification_status='verified',
             state=new_worker.state,
-        ).exclude(user=new_worker.user).order_by('-average_rating', '-rating_score')[:3]
+            district=new_worker.district,
+        ).exclude(user=new_worker.user)
+    )
 
-    for verifier in potential_verifiers:
+    if len(candidates) < 2:
+        # Expand to state level
+        candidates = list(
+            WorkerProfile.objects.filter(
+                verification_status='verified',
+                state=new_worker.state,
+            ).exclude(user=new_worker.user)
+        )
+
+    # Pick 2 at random
+    chosen = random.sample(candidates, min(2, len(candidates)))
+    for verifier in chosen:
         WorkerVerification.objects.get_or_create(
             new_worker=new_worker,
             verifier=verifier
@@ -96,6 +107,24 @@ def worker_dashboard(request):
         decision='pending'
     ).select_related('new_worker')
 
+    # ML: compute trust score for this worker
+    trust_score    = None
+    trust_label    = 'Unknown'
+    trust_color    = 'secondary'
+    trust_features = {}
+    try:
+        from ml_models.predictor import compute_trust_score, build_trust_features_from_worker
+        trust_features = build_trust_features_from_worker(profile)
+        trust_score    = compute_trust_score(trust_features)
+        if trust_score >= 75:
+            trust_label, trust_color = 'High Trust', 'success'
+        elif trust_score >= 50:
+            trust_label, trust_color = 'Moderate Trust', 'warning'
+        else:
+            trust_label, trust_color = 'Low Trust', 'danger'
+    except Exception:
+        pass
+
     context = {
         'profile': profile,
         'offers': offers,
@@ -104,6 +133,10 @@ def worker_dashboard(request):
         'pending_to_verify': pending_to_verify,
         'accepted_offers': offers.filter(status='accepted'),
         'pending_offers': offers.filter(status='pending'),
+        'trust_score':    trust_score,
+        'trust_label':    trust_label,
+        'trust_color':    trust_color,
+        'trust_features': trust_features,
     }
     return render(request, 'workers/dashboard.html', context)
 
@@ -155,71 +188,112 @@ def respond_offer(request, offer_id):
 
 @worker_required
 def verify_worker(request, verification_id):
-    """A verified worker submits their verification decision"""
+    """A verified worker views a new worker's profile and submits their peer verification."""
     profile = get_object_or_404(WorkerProfile, user=request.user)
-    verification = get_object_or_404(WorkerVerification, id=verification_id, verifier=profile, decision='pending')
+    verification = get_object_or_404(
+        WorkerVerification, id=verification_id, verifier=profile, decision='pending'
+    )
+    new_worker = verification.new_worker
 
     if request.method == 'POST':
-        decision = request.POST.get('decision')
-        comments = request.POST.get('comments', '')
-        if decision in ['approved', 'rejected']:
-            verification.decision = decision
-            verification.comments = comments
-            verification.submitted_at = timezone.now()
-            verification.save()
+        decision  = request.POST.get('decision')
+        comments  = request.POST.get('comments', '').strip()
+        rating_raw = request.POST.get('verifier_rating')
 
-            # Check if all 3 verifiers have responded
-            _process_verification_result(verification.new_worker)
-            messages.success(request, 'Your verification has been submitted.')
+        if decision not in ['approved', 'rejected']:
+            messages.error(request, 'Please select Approve or Reject.')
+            return redirect('verify_worker', verification_id=verification_id)
 
-    return redirect('worker_dashboard')
+        try:
+            verifier_rating = int(rating_raw)
+            if not (1 <= verifier_rating <= 5):
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, 'Please give a rating between 1 and 5.')
+            return redirect('verify_worker', verification_id=verification_id)
+
+        verification.decision       = decision
+        verification.comments       = comments
+        verification.verifier_rating = verifier_rating
+        verification.submitted_at   = timezone.now()
+
+        # ── ML: Detect fake verification review ─────────────────────────────────────────
+        try:
+            from ml_models.predictor import is_fake_review, build_fake_verification_features
+            features = build_fake_verification_features(verification, verifier_rating, comments)
+            fake = is_fake_review(features)
+            verification.is_fake_review = fake
+            if fake:
+                # Immediate penalty for submitting a fake-looking verification
+                profile.rating_score = max(0, round(float(profile.rating_score) - 0.5, 2))
+                profile.save(update_fields=['rating_score'])
+                messages.warning(
+                    request,
+                    '⚠️ Our AI has flagged your review as potentially fake. '
+                    'Your rating score has been reduced.'
+                )
+        except Exception:
+            pass  # Never break verification flow due to ML error
+
+        verification.save()
+        _process_verification_result(new_worker)
+
+        if not verification.is_fake_review:
+            messages.success(request, 'Your verification has been submitted. Thank you!')
+        return redirect('worker_dashboard')
+
+    # GET — show the new worker’s profile + verification form
+    references = new_worker.references.all()
+    portfolio  = new_worker.portfolio.all()
+    return render(request, 'workers/verify_worker.html', {
+        'verification': verification,
+        'new_worker':   new_worker,
+        'references':   references,
+        'portfolio':    portfolio,
+    })
 
 
 def _process_verification_result(new_worker):
-    """Process blockchain-style consensus verification.
-    Works with 1, 2, or 3 verifiers — whoever was available in the area.
-    Resolves as soon as ALL assigned verifiers have responded.
+    """Process 2-verifier peer consensus.
+    - Both approve  → verified; each earns +0.25 (if not fake)
+    - Both reject   → rejected; each earns +0.25 (if not fake)
+    - 1-1 tie       → stays pending; admin resolves
+    - 0 assigned    → stays pending; admin resolves
     """
     verifications = WorkerVerification.objects.filter(new_worker=new_worker)
     total_assigned = verifications.count()
     completed = verifications.exclude(decision='pending')
     completed_count = completed.count()
 
-    # No verifiers assigned at all — admin must manually verify
-    if total_assigned == 0:
-        return
+    if total_assigned == 0 or completed_count < total_assigned:
+        return  # Wait until all assigned verifiers have responded
 
-    # Wait until every assigned verifier has responded
-    if completed_count < total_assigned:
-        return
-
-    # All have responded — apply majority rule
     approved = completed.filter(decision='approved').count()
     rejected = completed.filter(decision='rejected').count()
 
-    if approved >= rejected:
-        # Majority (or tie) approved → verified
+    if approved == rejected:  # Tie (1-1 or 0-0)
+        # Leave pending — admin will decide via admin panel
+        return
+
+    if approved > rejected:
         new_worker.verification_status = 'verified'
         new_worker.verified_at = timezone.now()
         new_worker.save()
-
-        for v in completed.filter(decision='approved'):
-            v.verifier.rating_score += 0.25
-            v.verifier.save(update_fields=['rating_score'])
-        for v in completed.filter(decision='rejected'):
-            v.verifier.rating_score = max(0, v.verifier.rating_score - 0.5)
-            v.verifier.save(update_fields=['rating_score'])
+        winning_decision = 'approved'
     else:
-        # Majority rejected
         new_worker.verification_status = 'rejected'
         new_worker.save()
+        winning_decision = 'rejected'
 
-        for v in completed.filter(decision='rejected'):
-            v.verifier.rating_score += 0.25
-            v.verifier.save(update_fields=['rating_score'])
-        for v in completed.filter(decision='approved'):
-            v.verifier.rating_score = max(0, v.verifier.rating_score - 0.5)
-            v.verifier.save(update_fields=['rating_score'])
+    # Reward verifiers on the winning side (skip fake reviewers)
+    for v in completed.filter(decision=winning_decision, is_fake_review=False):
+        v.verifier.rating_score = round(float(v.verifier.rating_score) + 0.25, 2)
+        v.verifier.save(update_fields=['rating_score'])
+
+    # Penalise verifiers on the losing side
+    for v in completed.exclude(decision=winning_decision):
+        v.verifier.rating_score = max(0, round(float(v.verifier.rating_score) - 0.25, 2))
+        v.verifier.save(update_fields=['rating_score'])
 
 @worker_required
 def toggle_availability(request):
@@ -246,12 +320,37 @@ def edit_profile(request):
 
 
 def public_worker_profile(request, worker_id):
-    """Public profile visible to hirers"""
+    """Public profile visible to hirers — with ML trust score & fake review flags."""
     profile = get_object_or_404(WorkerProfile, id=worker_id, verification_status='verified')
     reviews = Review.objects.filter(worker=profile, is_approved=True).order_by('-created_at')
     portfolio = WorkerPortfolio.objects.filter(worker=profile)
+
+    # ── ML: Compute trust score ───────────────────────────────────────────────
+    trust_score = None
+    trust_label = 'Unknown'
+    trust_color = 'secondary'
+    try:
+        from ml_models.predictor import compute_trust_score, build_trust_features_from_worker
+        features = build_trust_features_from_worker(profile)
+        trust_score = compute_trust_score(features)
+        if trust_score >= 75:
+            trust_label, trust_color = 'High Trust', 'success'
+        elif trust_score >= 50:
+            trust_label, trust_color = 'Moderate Trust', 'warning'
+        else:
+            trust_label, trust_color = 'Low Trust', 'danger'
+    except Exception:
+        pass  # Never break the page if ML fails
+
+    real_reviews = reviews.filter(is_fake=False)
+    fake_review_count = reviews.filter(is_fake=True).count()
+
     return render(request, 'workers/public_profile.html', {
         'profile': profile,
-        'reviews': reviews,
-        'portfolio': portfolio
+        'reviews': real_reviews,
+        'fake_review_count': fake_review_count,
+        'portfolio': portfolio,
+        'trust_score': trust_score,
+        'trust_label': trust_label,
+        'trust_color': trust_color,
     })

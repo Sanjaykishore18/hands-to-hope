@@ -64,11 +64,22 @@ class Review(models.Model):
     )
     review_text = models.TextField(help_text='Describe the worker\'s performance in detail')
     is_approved = models.BooleanField(default=True, help_text='Admin can hide inappropriate reviews')
+    is_fake = models.BooleanField(default=False, help_text='Flagged as fake by ML model')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Review by {self.hirer} for {self.worker}: {self.rating}★"
 
     def save(self, *args, **kwargs):
+        # Run fake-review detection only on new reviews (no pk yet before super)
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+        if is_new:
+            try:
+                from ml_models.predictor import is_fake_review, build_fake_review_features
+                features = build_fake_review_features(self, self.hirer)
+                self.is_fake = is_fake_review(features)
+                Review.objects.filter(pk=self.pk).update(is_fake=self.is_fake)
+            except Exception:
+                pass  # Never break review submission due to ML error
         self.worker.update_rating()

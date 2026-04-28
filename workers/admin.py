@@ -18,7 +18,7 @@ class WorkerVerificationInline(admin.TabularInline):
     model = WorkerVerification
     fk_name = 'new_worker'
     extra = 0
-    readonly_fields = ['verifier', 'decision', 'comments', 'submitted_at']
+    readonly_fields = ['verifier', 'decision', 'verifier_rating', 'is_fake_review', 'comments', 'submitted_at']
 
 
 @admin.register(WorkerProfile)
@@ -50,14 +50,16 @@ class WorkerProfileAdmin(admin.ModelAdmin):
 
     def verifier_progress(self, obj):
         total = WorkerVerification.objects.filter(new_worker=obj).count()
-        done = WorkerVerification.objects.filter(new_worker=obj).exclude(decision='pending').count()
+        done  = WorkerVerification.objects.filter(new_worker=obj).exclude(decision='pending').count()
+        fake  = WorkerVerification.objects.filter(new_worker=obj, is_fake_review=True).count()
         if total == 0:
             return 'No verifiers assigned'
         colour = '#2ecc71' if done == total else '#f39c12'
-        return format_html(
-            '<span style="color:{};">{}/{} responded</span>', colour, done, total
-        )
-    verifier_progress.short_description = 'Verifiers'
+        label  = f'{done}/{total} responded'
+        if fake:
+            label += f' · {fake} fake⚠️'
+        return format_html('<span style="color:{};">{}</span>', colour, label)
+    verifier_progress.short_description = 'Peer Verifiers'
 
     def verify_workers(self, request, queryset):
         for worker in queryset:
@@ -89,9 +91,10 @@ class WorkerProfileAdmin(admin.ModelAdmin):
 
 @admin.register(WorkerVerification)
 class WorkerVerificationAdmin(admin.ModelAdmin):
-    list_display = ['new_worker', 'verifier', 'decision', 'submitted_at']
-    list_filter = ['decision']
+    list_display = ['new_worker', 'verifier', 'decision', 'verifier_rating', 'is_fake_review', 'submitted_at']
+    list_filter  = ['decision', 'is_fake_review']
     search_fields = ['new_worker__full_name', 'verifier__full_name']
+    readonly_fields = ['is_fake_review']
 
 
 @admin.register(WorkerPortfolio)
