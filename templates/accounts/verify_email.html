@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Verify Email - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <div class="text-center mb-4">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#FFF3EE;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-envelope-open fa-2x" style="color:var(--saffron)"></i>
+                    </div>
+                    <h3 class="fw-bold" style="color:var(--blue)">Verify Your Email</h3>
+                    <p class="text-muted">We sent a 6-digit OTP to</p>
+                    <strong>{{ email }}</strong>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-center d-block">Enter OTP</label>
+                        {{ form.otp }}
+                        {% if form.otp.errors %}
+                            <div class="text-danger small text-center mt-1">{{ form.otp.errors.0 }}</div>
+                        {% endif %}
+                        <div class="text-muted small text-center mt-2">OTP is valid for 10 minutes</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                        <i class="fas fa-check-circle me-2"></i>Verify OTP
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p class="text-muted small mb-2">Didn't receive the OTP?</p>
+                    <a href="{% url 'resend_otp' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-redo me-1"></i>Resend OTP
+                    </a>
+                </div>
+
+                <div class="alert alert-warning small mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Development mode:</strong> Check the console/terminal for OTP. Configure SMTP in settings.py for production.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.otp-input {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 0.5rem;
+    text-align: center;
+    padding: 15px;
+}
+</style>
+{% endblock %}

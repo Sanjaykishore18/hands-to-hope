@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}HandsToHope - Find Work, Find Workers{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero-section" style="background: linear-gradient(135deg, rgb(237, 122, 8), rgb(200, 100, 5)); padding: 80px 0;">
+    <div class="container text-center text-white">
+        <h1 class="display-4 fw-bold mb-3">
+            <i class="fas fa-hands-helping me-3"></i>
+            HandsToHope
+        </h1>
+        <p class="lead mb-1">India's Trusted Platform for Informal Workers</p>
+        <p class="mb-4 opacity-75">Connecting skilled workers with job opportunities — verified, fair, and local.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'worker_signup' %}" class="btn btn-light btn-lg px-4 py-3 fw-bold" style="color: rgb(237, 122, 8);">
+                <i class="fas fa-hard-hat me-2"></i>I'm a Worker
+            </a>
+            <a href="{% url 'hirer_signup' %}" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+                <i class="fas fa-user-tie me-2"></i>I Want to Hire
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Stats -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="stat-card p-4 rounded shadow-sm">
+                    <div class="mb-2"><i class="fas fa-users fa-2x" style="color: rgb(237, 122, 8);"></i></div>
+                    <p class="mb-0 fw-bold">Workers Registered</p>
+                    <small class="text-muted">Across Rural India</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 rounded shadow-sm">
+                    <div class="mb-2"><i class="fas fa-briefcase fa-2x" style="color: rgb(237, 122, 8);"></i></div>
+                    <p class="mb-0 fw-bold">Jobs Completed</p>
+                    <small class="text-muted">Successfully</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 rounded shadow-sm">
+                    <div class="mb-2"><i class="fas fa-map-marker-alt fa-2x" style="color: rgb(237, 122, 8);"></i></div>
+                    <p class="mb-0 fw-bold">States Covered</p>
+                    <small class="text-muted">Pan India</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-4 rounded shadow-sm">
+                    <div class="mb-2"><i class="fas fa-shield-alt fa-2x" style="color: rgb(237, 122, 8);"></i></div>
+                    <p class="mb-0 fw-bold">Verified Workers</p>
+                    <small class="text-muted">Community Verified</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it Works -->
+<section class="py-5" style="background: #FFF8F0;">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5" style="color: rgb(237, 122, 8);">How HandsToHope Works</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm">
+                    <div class="mb-3">
+                        <div style="width:70px;height:70px;border-radius:50%;background:#FFF0DC;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-user-plus fa-2x" style="color: rgb(237, 122, 8);"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold" style="color: rgb(237, 122, 8);">1. Register & Verify</h5>
+                    <p class="text-muted">Workers register with Aadhar. 3 verified workers in your area verify your identity — like a blockchain network!</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm">
+                    <div class="mb-3">
+                        <div style="width:70px;height:70px;border-radius:50%;background:#FFF0DC;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-search fa-2x" style="color: rgb(237, 122, 8);"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold" style="color: rgb(237, 122, 8);">2. Find & Connect</h5>
+                    <p class="text-muted">Hirers find available workers in their area, filter by skill, date, and time. Fair wages set by admin per region.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4 border-0 shadow-sm">
+                    <div class="mb-3">
+                        <div style="width:70px;height:70px;border-radius:50%;background:#FFF0DC;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-star fa-2x" style="color: rgb(237, 122, 8);"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold" style="color: rgb(237, 122, 8);">3. Work & Review</h5>
+                    <p class="text-muted">Worker completes the job and earns a star rating. Reviews build trust. Fair pay, fair treatment.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Skills -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-4" style="color: rgb(237, 122, 8);">Skills Available</h2>
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+            {% for skill, label in skills %}
+                <span class="skill-badge" style="background:#FFF0DC; color: rgb(237, 122, 8); padding:8px 16px; border-radius:20px; font-weight:500; border: 1px solid rgb(237, 122, 8);">
+                    <i class="fas fa-tools me-1"></i>{{ label }}
+                </span>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5" style="background: linear-gradient(135deg, rgb(237, 122, 8), rgb(200, 100, 5));">
+    <div class="container text-center text-white">
+        <h2 class="fw-bold mb-3">Ready to Get Started?</h2>
+        <p class="lead mb-4">Join thousands of workers and hirers across rural India</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="{% url 'worker_signup' %}" class="btn btn-light btn-lg fw-bold px-5" style="color: rgb(237, 122, 8);">
+                Register as Worker
+            </a>
+            <a href="{% url 'hirer_signup' %}" class="btn btn-outline-light btn-lg fw-bold px-5">
+                Find Workers
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

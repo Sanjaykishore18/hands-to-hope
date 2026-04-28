@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% block title %}Worker Dashboard - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="background:linear-gradient(135deg,var(--saffron),#E05A2B);color:white;border:none;">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        {% if profile.photo %}
+                            <img src="{{ profile.photo.url }}" class="profile-photo" style="border-color:white" alt="Profile">
+                        {% else %}
+                            <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;border:3px solid white;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h3 class="fw-bold mb-1">{{ profile.full_name }}</h3>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <span class="badge bg-white text-dark">{{ profile.get_primary_skill_display }}</span>
+                                <span class="badge bg-white text-dark"><i class="fas fa-map-marker-alt me-1" style="color:var(--saffron)"></i>{{ profile.district }}, {{ profile.state }}</span>
+                                {% if profile.verification_status == 'verified' %}
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Verified</span>
+                                {% elif profile.verification_status == 'pending' %}
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Verification Pending</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Verification Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="rating-circle">{{ profile.average_rating }}</div>
+                            <div class="mt-1 text-white-50 small">Avg Rating</div>
+                            <div class="small">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= profile.average_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-white-50"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 d-flex gap-2 flex-wrap">
+                        {% if profile.verification_status == 'verified' %}
+                            <form method="post" action="{% url 'toggle_availability' %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm {% if profile.is_available %}btn-light{% else %}btn-warning{% endif %} fw-bold">
+                                    <i class="fas fa-{% if profile.is_available %}pause{% else %}play{% endif %} me-1"></i>
+                                    {% if profile.is_available %}Mark Unavailable{% else %}Mark Available{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'edit_worker_profile' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-edit me-1"></i>Edit Profile
+                        </a>
+                        <a href="{% url 'upload_portfolio' %}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-camera me-1"></i>Upload Work Photo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if profile.verification_status == 'pending' %}
+        <div class="alert alert-warning mb-4">
+            <h6 class="fw-bold"><i class="fas fa-clock me-2"></i>Verification in Progress</h6>
+            <p class="mb-0">3 verified workers in your area are reviewing your profile. This is a community-driven process. You'll be notified once verified.</p>
+        </div>
+    {% elif profile.verification_status == 'rejected' %}
+        <div class="alert alert-danger mb-4">
+            <h6 class="fw-bold"><i class="fas fa-times-circle me-2"></i>Verification Rejected</h6>
+            <p class="mb-0">Your profile was not verified by the community. Please contact admin or update your information.</p>
+        </div>
+    {% endif %}
+
+    <!-- Stats Row -->
+    {% if profile.verification_status == 'verified' %}
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ pending_offers.count }}</div>
+                <p class="mb-0 fw-bold text-muted">Pending Offers</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ accepted_offers.count }}</div>
+                <p class="mb-0 fw-bold text-muted">Active Jobs</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ profile.total_ratings }}</div>
+                <p class="mb-0 fw-bold text-muted">Reviews</p>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ portfolio.count }}</div>
+                <p class="mb-0 fw-bold text-muted">Portfolio Items</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+
+        <!-- Job Offers -->
+        <div class="col-md-7">
+            <h5 class="section-title mb-3">Job Offers</h5>
+            {% if offers %}
+                {% for offer in offers %}
+                <div class="card mb-3 worker-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ offer.hirer.full_name }}
+                                    {% if offer.hirer.company_name %}
+                                        <span class="text-muted small">· {{ offer.hirer.company_name }}</span>
+                                    {% endif %}
+                                </h6>
+                                <p class="text-muted small mb-1">
+                                    <i class="fas fa-calendar me-1"></i>{{ offer.work_date }}
+                                    {% if offer.work_time %}<i class="fas fa-clock ms-2 me-1"></i>{{ offer.work_time }}{% endif %}
+                                    <i class="fas fa-hourglass ms-2 me-1"></i>{{ offer.duration_hours }} hours
+                                </p>
+                                {% if offer.description %}
+                                    <p class="text-muted small mb-1">{{ offer.description|truncatechars:80 }}</p>
+                                {% endif %}
+                                {% if offer.offered_wage %}
+                                    <span class="badge bg-success">₹{{ offer.offered_wage }}/day (Admin Rate)</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if offer.status == 'pending' %}
+                                    <span class="badge badge-pending mb-2 d-block text-center">Pending</span>
+                                    <form method="post" action="{% url 'respond_offer' offer.id %}" class="d-flex gap-2">
+                                        {% csrf_token %}
+                                        <button name="action" value="accept" class="btn btn-success btn-sm">
+                                            <i class="fas fa-check me-1"></i>Accept
+                                        </button>
+                                        <button name="action" value="reject" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-times me-1"></i>Reject
+                                        </button>
+                                    </form>
+                                {% elif offer.status == 'accepted' %}
+                                    <span class="badge badge-verified">Active</span>
+                                {% elif offer.status == 'completed' %}
+                                    <span class="badge bg-secondary">Completed</span>
+                                {% elif offer.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="card p-4 text-center text-muted">
+                    <i class="fas fa-inbox fa-3x mb-2 opacity-25"></i>
+                    <p>No job offers yet. Make sure your profile is complete and you're marked as available.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-5">
+
+            <!-- Portfolio -->
+            <h5 class="section-title mb-3">My Work Portfolio</h5>
+            <div class="row g-2 mb-4">
+                {% for item in portfolio %}
+                <div class="col-6">
+                    <div class="position-relative">
+                        <img src="{{ item.image.url }}" class="img-fluid rounded" style="height:120px;width:100%;object-fit:cover;" alt="{{ item.caption }}">
+                        <div class="position-absolute bottom-0 start-0 end-0 p-1" style="background:rgba(0,0,0,0.5);border-radius:0 0 8px 8px;">
+                            <small class="text-white">{{ item.caption|truncatechars:20 }}</small>
+                        </div>
+                        <a href="{% url 'delete_portfolio' item.pk %}" class="position-absolute top-0 end-0 m-1 btn btn-danger btn-sm" style="width:24px;height:24px;padding:0;font-size:0.7rem;display:flex;align-items:center;justify-content:center;"
+                           onclick="return confirm('Delete this image?')">×</a>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="col-6">
+                    <a href="{% url 'upload_portfolio' %}" class="card h-100 d-flex align-items-center justify-content-center text-decoration-none" style="min-height:120px;border:2px dashed var(--saffron);">
+                        <div class="text-center" style="color:var(--saffron)">
+                            <i class="fas fa-plus-circle fa-2x mb-1"></i>
+                            <div class="small fw-bold">Add Photo</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Reviews -->
+            <h5 class="section-title mb-3">Recent Reviews</h5>
+            {% if reviews %}
+                {% for review in reviews|slice:":3" %}
+                <div class="card mb-2">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong class="small">{{ review.hirer.full_name }}</strong>
+                            <div class="star-rating">
+                                {% for i in "12345" %}
+                                    <i class="fa{% if forloop.counter <= review.rating %}s{% else %}r{% endif %} fa-star" style="font-size:0.8rem;"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">{{ review.review_text|truncatechars:100 }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted small">No reviews yet.</p>
+            {% endif %}
+
+            <!-- Pending Verifications -->
+            {% if pending_to_verify %}
+            <h5 class="section-title mb-3 mt-4">
+                <i class="fas fa-shield-alt me-2"></i>Verify New Workers
+                <span class="badge" style="background:var(--saffron)">{{ pending_to_verify.count }}</span>
+            </h5>
+            <div class="alert alert-warning small">
+                <i class="fas fa-star me-1"></i>
+                <strong>Earn points!</strong> Accurate verifications earn you rating score rewards.
+            </div>
+            {% for v in pending_to_verify %}
+            <div class="card mb-2 border-warning">
+                <div class="card-body p-3">
+                    <h6 class="fw-bold">{{ v.new_worker.full_name }}</h6>
+                    <p class="text-muted small mb-2">
+                        {{ v.new_worker.primary_skill }} · {{ v.new_worker.district }}
+                    </p>
+                    <p class="small mb-2"><em>"{{ v.new_worker.brief_intro|truncatechars:80 }}"</em></p>
+
+                    <form method="post" action="{% url 'verify_worker' v.id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <textarea name="comments" class="form-control form-control-sm" rows="2" placeholder="Your assessment of this worker..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button name="decision" value="approved" class="btn btn-success btn-sm flex-grow-1">
+                                <i class="fas fa-check me-1"></i>Approve
+                            </button>
+                            <button name="decision" value="rejected" class="btn btn-outline-danger btn-sm flex-grow-1">
+                                <i class="fas fa-times me-1"></i>Reject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

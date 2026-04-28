@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Setup Hirer Profile - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header py-3" style="background:linear-gradient(135deg,var(--green),#1B4F72);color:white;">
+                    <h4 class="mb-0 fw-bold"><i class="fas fa-briefcase me-2"></i>Complete Your Hirer Profile</h4>
+                    <small class="opacity-75">Tell workers who you are and where you're located</small>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="text-center mb-4">
+                            <img id="photo-preview" src="#" alt="Preview" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--green);display:none;">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                {{ form.full_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Company/Farm Name</label>
+                                {{ form.company_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Your Photo</label>
+                                {{ form.photo }}
+                            </div>
+                            <div class="col-md-6"></div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Village/Town <span class="text-danger">*</span></label>
+                                {{ form.village_town }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">District <span class="text-danger">*</span></label>
+                                {{ form.district }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">State <span class="text-danger">*</span></label>
+                                {{ form.state }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Pincode</label>
+                                {{ form.pincode }}
+                            </div>
+                            <div class="col-md-9">
+                                <label class="form-label fw-semibold">Full Address</label>
+                                {{ form.full_address }}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-3 small">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Workers will only be shown to you if they are in the same district/area as you.
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg mt-3 w-100 fw-bold">
+                            <i class="fas fa-check-circle me-2"></i>Complete Setup & Find Workers
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Login - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-4">
+                <div class="text-center mb-4">
+                    <div style="width:70px;height:70px;border-radius:50%;background:var(--light-saffron);margin:0 auto 15px;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-sign-in-alt fa-2x" style="color:var(--saffron)"></i>
+                    </div>
+                    <h3 class="fw-bold" style="color:var(--blue)">Welcome Back</h3>
+                    <p class="text-muted">Sign in to your HandsToHope account</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Password</label>
+                        {{ form.password }}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <hr class="my-4">
+                <div class="text-center">
+                    <p class="mb-1">Don't have an account?</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{% url 'worker_signup' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-hard-hat me-1"></i>Worker Signup
+                        </a>
+                        <a href="{% url 'hirer_signup' %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-briefcase me-1"></i>Hirer Signup
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

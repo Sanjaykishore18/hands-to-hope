@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Complete Your Profile - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header py-3" style="background:linear-gradient(135deg,var(--saffron),#E05A2B);">
+                    <h4 class="mb-0 text-white fw-bold">
+                        <i class="fas fa-id-card me-2"></i>Complete Your Worker Profile
+                    </h4>
+                    <small class="text-white opacity-75">This information helps hirers find and trust you</small>
+                </div>
+                <div class="card-body p-4">
+
+                    <!-- Progress Steps -->
+                    <div class="d-flex mb-4 gap-2">
+                        <div class="badge bg-success">✓ Email Verified</div>
+                        <div class="badge" style="background:var(--saffron)">→ Fill Profile</div>
+                        <div class="badge bg-secondary">→ Await Verification</div>
+                        <div class="badge bg-secondary">→ Start Working!</div>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Photo -->
+                        <div class="mb-4 text-center">
+                            <h6 class="section-title mb-3">Profile Photo <span class="text-danger">*</span></h6>
+                            <div class="mb-3">
+                                <img id="photo-preview" src="#" alt="Preview" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--saffron);display:none;">
+                            </div>
+                            {{ form.photo }}
+                            <div class="form-text">Upload a clear front-facing photo (required for verification)</div>
+                            {% if form.photo.errors %}<div class="text-danger small">{{ form.photo.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <hr>
+
+                        <!-- Personal Info -->
+                        <h6 class="section-title mb-3">Personal Information</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name (as per Aadhar) <span class="text-danger">*</span></label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Gender <span class="text-danger">*</span></label>
+                                {{ form.gender }}
+                            </div>
+                        </div>
+
+                        <!-- Aadhar -->
+                        <h6 class="section-title mb-3">Aadhar Verification</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Aadhar Number <span class="text-danger">*</span></label>
+                                {{ form.aadhar_number }}
+                                <div class="form-text">12-digit Aadhar number</div>
+                                {% if form.aadhar_number.errors %}<div class="text-danger small">{{ form.aadhar_number.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Aadhar Card Photo</label>
+                                {{ form.aadhar_card_image }}
+                                <div class="form-text">Upload front side of Aadhar card</div>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <h6 class="section-title mb-3">Address</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Village/Town <span class="text-danger">*</span></label>
+                                {{ form.village_town }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">District <span class="text-danger">*</span></label>
+                                {{ form.district }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">State <span class="text-danger">*</span></label>
+                                {{ form.state }}
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Pincode <span class="text-danger">*</span></label>
+                                {{ form.pincode }}
+                            </div>
+                            <div class="col-md-9">
+                                <label class="form-label fw-semibold">Full Address <span class="text-danger">*</span></label>
+                                {{ form.full_address }}
+                            </div>
+                        </div>
+
+                        <!-- Skills -->
+                        <h6 class="section-title mb-3">Skills & Experience</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Primary Skill <span class="text-danger">*</span></label>
+                                {{ form.primary_skill }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Other Skills</label>
+                                {{ form.secondary_skills }}
+                                <div class="form-text">Comma separated</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Years of Experience <span class="text-danger">*</span></label>
+                                {{ form.years_of_experience }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">About Your Work <span class="text-danger">*</span></label>
+                                {{ form.brief_intro }}
+                                <div class="form-text">Describe your experience, past work, and what makes you reliable</div>
+                            </div>
+                        </div>
+
+                        <!-- References -->
+                        <h6 class="section-title mb-3">References (People who can vouch for your work)</h6>
+                        <div class="alert alert-info small mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Add at least 1 reference — former employers, neighbors, or community members who know your work.
+                        </div>
+
+                        {{ formset.management_form }}
+                        {% for ref_form in formset %}
+                            <div class="card mb-3 border-start border-warning border-3">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">Reference {{ forloop.counter }}</h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <label class="form-label fw-semibold">Name</label>
+                                            {{ ref_form.name }}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">Phone</label>
+                                            {{ ref_form.phone }}
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold">Relation</label>
+                                            {{ ref_form.relation }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-semibold">Village/Town</label>
+                                            {{ ref_form.village_town }}
+                                        </div>
+                                        {% for hidden in ref_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Profile for Verification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelector('input[type="file"][name="photo"]').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('photo-preview');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(e.target.files[0]);
+});
+</script>
+{% endblock %}

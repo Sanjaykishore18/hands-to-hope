@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile.full_name }} - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card text-center p-4">
+                {% if profile.photo %}
+                    <img src="{{ profile.photo.url }}" class="profile-photo mb-3 mx-auto" style="width:120px;height:120px;" alt="">
+                {% else %}
+                    <div style="width:120px;height:120px;border-radius:50%;background:#f0f0f0;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-user fa-3x text-muted"></i>
+                    </div>
+                {% endif %}
+                <h4 class="fw-bold">{{ profile.full_name }}</h4>
+                <p class="text-muted">{{ profile.get_primary_skill_display }}</p>
+                <div class="rating-circle mx-auto mb-2">{{ profile.average_rating }}</div>
+                <div class="star-rating mb-2">
+                    {% for i in "12345" %}
+                        <i class="fa{% if forloop.counter <= profile.average_rating %}s{% else %}r{% endif %} fa-star"></i>
+                    {% endfor %}
+                </div>
+                <p class="text-muted small">{{ profile.total_ratings }} review(s)</p>
+                <span class="badge badge-verified">✓ Verified Worker</span>
+                <hr>
+                <div class="text-start small">
+                    <p><i class="fas fa-map-marker-alt me-2" style="color:var(--saffron)"></i>{{ profile.district }}, {{ profile.state }}</p>
+                    <p><i class="fas fa-briefcase me-2" style="color:var(--blue)"></i>{{ profile.years_of_experience }} years experience</p>
+                    <div class="{% if profile.is_available %}available{% else %}unavailable{% endif %} availability-badge text-center">
+                        {% if profile.is_available %}✓ Available for Work{% else %}✗ Currently Busy{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- References -->
+            {% if profile.references.all %}
+            <div class="card p-3 mt-3">
+                <h6 class="fw-bold mb-3"><i class="fas fa-address-book me-2"></i>References</h6>
+                {% for ref in profile.references.all %}
+                <div class="mb-2 pb-2 border-bottom">
+                    <div class="fw-semibold">{{ ref.name }}</div>
+                    <div class="text-muted small">{{ ref.relation }} · {{ ref.village_town }}</div>
+                    <div class="small"><i class="fas fa-phone me-1"></i>{{ ref.phone }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-8">
+            <!-- About -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3" style="color:var(--blue)">About</h5>
+                    <p>{{ profile.brief_intro }}</p>
+                    {% if profile.secondary_skills %}
+                        <h6 class="fw-bold mt-3">Other Skills</h6>
+                        <p class="text-muted">{{ profile.secondary_skills }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Portfolio -->
+            {% if portfolio %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3" style="color:var(--blue)">Work Portfolio</h5>
+                    <div class="row g-2">
+                        {% for item in portfolio %}
+                        <div class="col-md-4 col-6">
+                            <img src="{{ item.image.url }}" class="img-fluid rounded" style="height:130px;width:100%;object-fit:cover;" alt="{{ item.caption }}">
+                            {% if item.caption %}<small class="text-muted">{{ item.caption }}</small>{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3" style="color:var(--blue)">Reviews from Hirers</h5>
+                    {% for review in reviews %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex justify-content-between mb-1">
+                            <strong>{{ review.hirer.full_name }}</strong>
+                            <div class="star-rating">
+                                {% for i in "12345" %}
+                                    <i class="fa{% if forloop.counter <= review.rating %}s{% else %}r{% endif %} fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="text-muted mb-0">{{ review.review_text }}</p>
+                        <small class="text-muted">{{ review.created_at|date:"d M Y" }}</small>
+                    </div>
+                    {% empty %}
+                        <p class="text-muted">No reviews yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Write Review - HandsToHope{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header py-3" style="background:linear-gradient(135deg,var(--gold),#E5A800);">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="fas fa-star me-2"></i>Rate & Review Worker
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Worker Info -->
+                    <div class="d-flex gap-3 mb-4 p-3 rounded" style="background:#f8f9fa;">
+                        {% if worker.photo %}
+                            <img src="{{ worker.photo.url }}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" alt="">
+                        {% endif %}
+                        <div>
+                            <h6 class="fw-bold mb-1">{{ worker.full_name }}</h6>
+                            <p class="text-muted small mb-0">
+                                {{ worker.get_primary_skill_display }} ·
+                                Job on {{ offer.work_date }}
+                                {% if offer.work_time %}at {{ offer.work_time }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Star Rating -->
+                        <div class="mb-4 text-center">
+                            <label class="form-label fw-bold d-block mb-3">How was the work? <span class="text-danger">*</span></label>
+                            <div class="interactive-stars d-flex justify-content-center gap-2 mb-2" id="star-container">
+                                {% for i in "12345" %}
+                                    <i class="far fa-star" data-rating="{{ forloop.counter }}"></i>
+                                {% endfor %}
+                            </div>
+                            <div id="rating-label" class="text-muted small">Click to rate</div>
+                            {{ form.rating }}
+                            {% if form.rating.errors %}
+                                <div class="text-danger small">{{ form.rating.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Review Text -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                {{ form.review_text.label }} <span class="text-danger">*</span>
+                            </label>
+                            {{ form.review_text }}
+                            <div class="form-text">Minimum 30 characters. Be honest and helpful to other hirers.</div>
+                            {% if form.review_text.errors %}
+                                <div class="text-danger small">{{ form.review_text.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning fw-bold px-4">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                            <a href="{% url 'hirer_dashboard' %}" class="btn btn-outline-secondary">Skip for Now</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const stars = document.querySelectorAll('#star-container i');
+const ratingInput = document.getElementById('rating-value');
+const labels = ['', 'Poor', 'Below Average', 'Average', 'Good', 'Excellent!'];
+
+stars.forEach(star => {
+    star.addEventListener('mouseover', function() {
+        const rating = this.dataset.rating;
+        highlightStars(rating);
+        document.getElementById('rating-label').textContent = labels[rating];
+    });
+    star.addEventListener('click', function() {
+        const rating = this.dataset.rating;
+        ratingInput.value = rating;
+        highlightStars(rating);
+        document.getElementById('rating-label').textContent = '★ ' + labels[rating];
+    });
+    star.addEventListener('mouseleave', function() {
+        const current = ratingInput.value || 0;
+        highlightStars(current);
+        document.getElementById('rating-label').textContent = current ? '★ ' + labels[current] : 'Click to rate';
+    });
+});
+
+function highlightStars(n) {
+    stars.forEach((s, i) => {
+        s.className = i < n ? 'fas fa-star active' : 'far fa-star';
+    });
+}
+</script>
+{% endblock %}
