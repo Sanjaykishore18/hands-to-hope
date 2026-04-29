@@ -5,3 +5,4 @@ django-unfold==0.83.1
 scikit-learn==1.8.0
 joblib==1.5.3
 numpy==2.3.2
+whitenoise==6.11.0
