@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
+from unfold.admin import ModelAdmin
 from .models import WorkerProfile, WorkerReference, WorkerPortfolio, WorkerVerification
 
 
@@ -22,7 +23,7 @@ class WorkerVerificationInline(admin.TabularInline):
 
 
 @admin.register(WorkerProfile)
-class WorkerProfileAdmin(admin.ModelAdmin):
+class WorkerProfileAdmin(ModelAdmin):
     list_display = [
         'full_name', 'primary_skill', 'district', 'state',
         'verification_badge', 'verifier_progress',
@@ -90,7 +91,7 @@ class WorkerProfileAdmin(admin.ModelAdmin):
 
 
 @admin.register(WorkerVerification)
-class WorkerVerificationAdmin(admin.ModelAdmin):
+class WorkerVerificationAdmin(ModelAdmin):
     list_display = ['new_worker', 'verifier', 'decision', 'verifier_rating', 'is_fake_review', 'submitted_at']
     list_filter  = ['decision', 'is_fake_review']
     search_fields = ['new_worker__full_name', 'verifier__full_name']
@@ -98,5 +99,5 @@ class WorkerVerificationAdmin(admin.ModelAdmin):
 
 
 @admin.register(WorkerPortfolio)
-class WorkerPortfolioAdmin(admin.ModelAdmin):
+class WorkerPortfolioAdmin(ModelAdmin):
     list_display = ['worker', 'caption', 'uploaded_at']
