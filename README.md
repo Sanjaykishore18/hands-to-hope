@@ -1,4 +1,4 @@
-# 🔨 HandsToHope - Informal Worker Platform for Rural India
+# 🔨 HandsToHope - Informal Worker Platform for India
 
 A Django platform connecting informal workers with hirers across rural India, with community-based verification, fair admin-set wages, and a blockchain-inspired review system.
 
